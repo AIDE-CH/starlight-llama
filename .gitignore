@@ -1,0 +1,6 @@
+node_modules
+.vscode-test/
+*.vsix
+/vscode-extension.txt
+/git-commands.txt
+/.vscode/starlight-llama.code-workspace

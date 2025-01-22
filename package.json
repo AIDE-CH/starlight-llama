@@ -1,0 +1,83 @@
+{
+  "name": "starlight-llama",
+  "displayName": "starlight llama",
+  "description": "llama -> ollama -> vscode",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "starlight-llama.helloWorld",
+    "starlight-llama.generate",
+    "starlight-llama.search"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "starlight-llama.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "starlight-llama.generate",
+        "title": "Llama generate"
+      },
+      {
+        "command": "starlight-llama.search",
+        "title": "Llama search"
+      }
+    ],
+    "configuration": {
+      "title": "starlight-llama settings",
+      "properties": {
+        "starlight-llama.model": {
+          "type": "string",
+          "default": "llama3.1:8b",
+          "description": "used llama (or other LLM) model"
+        },
+        "starlight-llama.url": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "ollama url"
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "starlight-llama.generate",
+          "group": "starlight-llama",
+          "when": "editorTextFocus "
+        },
+        {
+          "command": "starlight-llama.search",
+          "group": "starlight-llama",
+          "when": "editorTextFocus "
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.16.0"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "npm-watch": "^0.13.0",
+    "ollama": "^0.5.12",
+    "request": "^2.88.2",
+    "request-progress": "^3.0.0"
+  }
+}
