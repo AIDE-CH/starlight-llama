@@ -4,3 +4,4 @@ node_modules
 /vscode-extension.txt
 /git-commands.txt
 /.vscode/starlight-llama.code-workspace
+/vsc-extension-quickstart.md

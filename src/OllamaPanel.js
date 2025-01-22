@@ -43,7 +43,6 @@ class OllamaPanel {
     );
 
     OllamaPanel.currentPanel = new OllamaPanel(panel, extensionUri);
-
     }
 
 
@@ -66,19 +65,6 @@ class OllamaPanel {
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-        // // Handle messages from the webview
-        // this._panel.webview.onDidReceiveMessage(
-        //   (message) => {
-        //     switch (message.command) {
-        //       case "alert":
-        //         vscode.window.showErrorMessage(message.text);
-        //         return;
-        //     }
-        //   },
-        //   null,
-        //   this._disposables
-        // );
     }
 
     dispose() {
@@ -117,7 +103,6 @@ class OllamaPanel {
                     break;
                 }
                 case "onDownload":{
-                  //vscode.window.showInformationMessage("onDownload");
                   try{
                     OllamaUtils.downloadProgressAndRun();
                   }catch(e){
@@ -126,40 +111,21 @@ class OllamaPanel {
                   break;
                 }
                 case "onTest":{
-                  //vscode.window.showInformationMessage("onTest");
                   await OllamaUtils.testOllama();
                   break;
                 }
-                case "onModel": {
-                  //await EUtils.downloadFile("https://ollama.com/download/OllamaSetup.exe", "OllamaSetup.exe");
-                  
-                  //vscode.window.showInformationMessage("onModel");
+                case "onModel": {                  
                     if (!data.value) {
                         return;
                     }
                     OllamaUtils.setModel(data.value);
-                    //vscode.window.showInformationMessage(data.value);
                     break;
                 }
-                
-                // case "tokens": {
-                //   await Util.globalState.update(accessTokenKey, data.accessToken);
-                //   await Util.globalState.update(refreshTokenKey, data.refreshToken);
-                //   break;
-                // }
             }
         });
     }
     
-    // _getOllamaSearch(webview){
-    //   fetch('https://ollama.com/search').then(response => response.text()) .then(html => { panel.webview.html = html });
-    // }
   async _getHtmlForWebview(webview) {
-    // // And the uri we use to load this script in the webview
-    // const scriptUri = webview.asWebviewUri(
-    //   vscode.Uri.joinPath(this._extensionUri, "out/compiled", "HelloWorld.js")
-    // );
-
     // // Uri to load styles into webview
     const stylesResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
@@ -238,14 +204,5 @@ class OllamaPanel {
   }
 
 }
-
-// class HelloWorldPanel {
-//     static currentPanel; // current panel from type HelloWorldPanel
-//     _panel; // vscode.WebviewPanel
-//     _extensionUri; // vscode.Uri
-
-//     static createOrShow(extensionUri) {
-//     }
-// }
 
 module.exports = OllamaPanel;

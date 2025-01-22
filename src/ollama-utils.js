@@ -14,7 +14,6 @@ const path = require('path');
 const request = require('request');
 var progress = require('request-progress');
 
-// you are a python coding assistant. Please write a python function which does the following: sort an array using buble sort. provide only the function so I can put it directly in my code.
 class Utils{
     static sett = {model: "llama3.1:8b", url: "http://localhost:11434"};
 
@@ -84,18 +83,8 @@ class Utils{
                 // let last = 0;
                 return new Promise((resolve) => {
                     const interval = setInterval(() => {
-                        // let state = "pending";
-                        // currentProgress += 10;
-                        // if(currentProgress < 100){
-                        //      progress.report({ increment: 10, message: `${currentProgress}% complete` });
-                        //  }else{
-                        //      progress.report({ increment: 100, message: `done pulling ${model}` });
-                        // }
                         let done = false;
                         try{
-                            // console.log();
-                            // console.log(asyncIterator.getResult());
-
                             if(asyncIterator.getState() == "pending"){
                             }else{
                                 done = true;
@@ -121,32 +110,6 @@ class Utils{
                     }, 1000); // Update progress every second
                 });
             });
-
-
-            // for await (const progressResponse of asyncIterator) {
-            //     // Step 3: Handle progress updates
-            //     console.log('Progress:', progressResponse.progress);
-    
-            //     // Check if the task is completed
-            //     if (progressResponse.done) {
-            //         console.log('Task Complete');
-            //         break;
-            //     }
-            // }
-
-            // progressResponse.on('progress', (progress) => {
-            //     console.log(progress);
-            // });
-        
-            // progressResponse.on('complete', () => {
-            //     console.log("done pull");
-            // });
-        
-            // progressResponse.on('error', (error) => {
-            //     console.log(error);
-            // });
-            
-            //vscode.window.showInformationMessage("downloading: " + model + "\n" + response.status);
         }catch(e){
             vscode.window.showErrorMessage(e);
         }
