@@ -1,9 +1,11 @@
 
 
-const OllamaUtils = require('./ollama-utils');
+const GUtils = require("./GUtils");
+const OllamaUtils = require('./OllamaUtils');
 const vscode = require('vscode');
+const path = require('path');
 
-const getNonce = require('./getNonce');
+const getNonce = require('./GetNonce');
 
 
 class OllamaPanel {
@@ -126,7 +128,6 @@ class OllamaPanel {
     }
     
   async _getHtmlForWebview(webview) {
-    // // Uri to load styles into webview
     const stylesResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
     );
@@ -134,7 +135,7 @@ class OllamaPanel {
       vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
     );
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "ollama-panel.js")
+      vscode.Uri.joinPath(this._extensionUri, "media", "search-panel.js")
     );
 
     // // Use a nonce to only allow specific scripts to be run
@@ -142,56 +143,19 @@ class OllamaPanel {
     const itemsOllama = await OllamaUtils.listOllama();
     const jsonArray = JSON.stringify(itemsOllama);
 
-    return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-        -->
-        <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="${stylesResetUri}" rel="stylesheet">
-        <link href="${stylesMainUri}" rel="stylesheet">
-		</head>
-    <body>
-      <input placeholder="search for a model" id="searchInput" style="width: 60%; display:inline-block;" />
-      <button id="ollama-test" style="width: fit-content;">Test Ollama</button>
-      <button id="ollama-download" style="width: fit-content;">Download Ollama</button>
-      <div id="ollama-results-number-div"> </div>
-      <div id="ollama-results-div"> </div>
-      <script nonce="${nonce}">
-        //console.log("######################## 1");
-        const allModels = JSON.parse('${jsonArray}');
-        //console.log("######################## 2");
-      </script>
-      <script src="${scriptUri}" nonce="${nonce}">
-      </script>
-      <script nonce="${nonce}">  
-        OllamaJsUtil.nonce = "${nonce}";
-        function setModelFromMainPage(modelName){
-          OllamaJsUtil.setModel(modelName);
-        }
-        //console.log("######################## 10");
-        const resultsDiv = document.getElementById("ollama-results-div");
-        const resultsNumberDiv = document.getElementById("ollama-results-number-div");
-        const searchInput = document.getElementById("searchInput");
-        searchInput.value = "llama phi";
-        //console.log("######################## 11");
-        OllamaJsUtil.buildList(allModels, resultsDiv, resultsNumberDiv);
-        //console.log("######################## 12");
-        searchInput.focus();
-        searchInput.addEventListener('keydown', (event) => {const filterdModels = OllamaJsUtil.search(allModels, event); 
-                                                            OllamaJsUtil.buildList(filterdModels, resultsDiv, resultsNumberDiv);
-                                    });
-        const ollamaTest = document.getElementById("ollama-test");
-        const ollamaDownload = document.getElementById("ollama-download");
-        ollamaTest.addEventListener('click', (event) => OllamaJsUtil.test() );
-        ollamaDownload.addEventListener('click', (event) => OllamaJsUtil.download());
-      </script>
-    </body>
-		</html>`;
+    
+    let html = await GUtils.readHtmlFile(
+      path.join(this._extensionUri.fsPath, "media", "search-panel.html")
+    );
+
+    html = html.replaceAll("${webview.cspSource}", webview.cspSource);
+    html = html.replaceAll("${stylesResetUri}", stylesResetUri);
+    html = html.replaceAll("${stylesMainUri}", stylesMainUri);
+    html = html.replaceAll("${scriptUri}", scriptUri);
+    html = html.replaceAll("${nonce}", nonce);
+    html = html.replaceAll("${itemsOllama}", itemsOllama);
+    html = html.replaceAll("${jsonArray}", jsonArray);
+    return html;
   }
 
   _getViewOptions(eUri){

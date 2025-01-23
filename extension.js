@@ -1,10 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 
-const OllamaPanel = require("./src/OllamaPanel");
-const EUtils = require("./src/editor-utils");
-const GUtils = require("./src/g-utils");
+const OllamaPanel = require("./src/SearchPanel");
+const EUtils = require("./src/EditorUtils");
+const GUtils = require("./src/GUtils");
 const vscode = require("vscode");
-const OllamaUtils = require('./src/ollama-utils');
+const SidebarProvider = require("./src/SidebarProvider");
+const OllamaUtils = require('./src/OllamaUtils');
 
 
 
@@ -12,6 +13,11 @@ const OllamaUtils = require('./src/ollama-utils');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider( "starlight-llama-sidebar",sidebarProvider)
+	);
+
 
 	const searchCmd = vscode.commands.registerCommand('starlight-llama.search', async function () {
 		OllamaPanel.createOrShow(context.extensionUri);

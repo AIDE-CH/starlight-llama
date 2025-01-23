@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!--
+					Use a content security policy to only allow loading images from https or from our extension directory,
+					and only allow scripts that have a specific nonce.
+        -->
+    <meta http-equiv="Content-Security-Policy"
+        content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${stylesResetUri}" rel="stylesheet">
+    <link href="${stylesMainUri}" rel="stylesheet">
+    <style>
+        .header-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-container h1 {
+            margin: 0;
+            padding-right: 10px;
+        }
+
+        .header-container .separator {
+            flex-grow: 1;
+            /* height: 1px;
+            background-color: #000;  */
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="ollama-autocomplete">
+        <span> Autocomplete is running </span>
+        <span
+            style="font-style:italic; text-decoration:underline overline; font-weight: 800; color: rgb(250, 213, 7); font-size: larger;">
+            stop it </span>
+    </button>
+    <button id="ollama-search">Search Ollama models and pull them</button>
+
+    <div class="header-container">
+        <h2>Install and test Ollama &nbsp;</h2>
+        <div class="separator">
+            <hr />
+        </div>
+    </div>
+
+    <button id="ollama-test" style="width: fit-content;">Test Ollama</button>
+    <button id="ollama-download" style="width: fit-content;">Download Ollama</button>
+
+
+    <div class="header-container">
+        <h2>Other settings &nbsp;</h2>
+        <div class="separator">
+            <hr />
+        </div>
+    </div>
+
+    <script nonce="${nonce}">
+        //console.log("######################## 1");
+        // const allModels = JSON.parse('${jsonArray}');
+        //console.log("######################## 2");
+    </script>
+    <script src="${scriptUri}" nonce="${nonce}">
+    </script>
+    <script nonce="${nonce}">
+        OllamaJsUtil.nonce = "${nonce}";
+        // function setModelFromMainPage(modelName) {
+        //     OllamaJsUtil.setModel(modelName);
+        // }
+        //console.log("######################## 10");
+        // const resultsDiv = document.getElementById("ollama-results-div");
+        // const resultsNumberDiv = document.getElementById("ollama-results-number-div");
+        // const searchInput = document.getElementById("searchInput");
+        // //searchInput.value = "llama phi";
+        // //console.log("######################## 11");
+        // OllamaJsUtil.buildList(allModels, resultsDiv, resultsNumberDiv);
+        // //console.log("######################## 12");
+        // searchInput.focus();
+        // searchInput.addEventListener('keydown', (event) => {
+        //     const filterdModels = OllamaJsUtil.search(allModels, event);
+        //     OllamaJsUtil.buildList(filterdModels, resultsDiv, resultsNumberDiv);
+        // });
+
+        const ollamaToggleAutoComplete = document.getElementById("ollama-autocomplete");
+        const ollamaSearch = document.getElementById("ollama-search");
+        let autoComplete = ${autoComplete};
+        function updateAutoCompleteButton(){
+            const spans = ollamaToggleAutoComplete.getElementsByTagName("span");
+            if(autoComplete){
+                spans[0].innerText = "Auto-complete is running";
+                spans[1].innerText = "stop it";
+            }else{
+                spans[0].innerText = "Auto-complete is stoped";
+                spans[1].innerText = "start it";
+            }
+        }
+        updateAutoCompleteButton();
+
+        ollamaToggleAutoComplete.addEventListener('click', (event) => {
+            autoComplete = !autoComplete;
+            updateAutoCompleteButton(autoComplete);
+            OllamaJsUtil.autoComplete();
+        });
+        ollamaSearch.addEventListener('click', (event) => OllamaJsUtil.search());
+
+        const ollamaTest = document.getElementById("ollama-test");
+        const ollamaDownload = document.getElementById("ollama-download");
+        ollamaTest.addEventListener('click', (event) => OllamaJsUtil.test());
+        ollamaDownload.addEventListener('click', (event) => OllamaJsUtil.download());
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@ class LangHandler{
     generatedFunctionStart = "";
     generatedFunctionEnd = "";
 
-    lineComments = [];
+    singleLineComments = [];
     multiLineComments = [];
 
     extractGeneratedFunction(str){
@@ -12,8 +12,19 @@ class LangHandler{
         str = str.trim();
         if(!str) return str;
 
-        str = LangHandler.removeFromStart(str, this.generatedFunctionStart);
-        str = LangHandler.removeFromEnd(str, this.generatedFunctionEnd);
+        for(const gfs of this.generatedFunctionStart){
+            str = LangHandler.removeFromStart(str, gfs);
+            if(!str) return str;
+            str = str.trim();
+            if(!str) return str;
+        }
+        for(const gfe of this.generatedFunctionEnd){
+            str = LangHandler.removeFromEnd(str, gfe);
+            if(!str) return str;
+            str = str.trim();
+            if(!str) return str;
+        }
+
         
         if(str) str = str.trim();
         return str;
@@ -87,8 +98,8 @@ class LangHandler{
 }
 
 class LangPy extends LangHandler{
-    generatedFunctionStart = "```python";
-    generatedFunctionEnd = "```";
+    generatedFunctionStart = ["```python", "```"];
+    generatedFunctionEnd = ["```"];
 
     singleLineComments = ["#"];
     multiLineComments = [
@@ -98,25 +109,42 @@ class LangPy extends LangHandler{
 
 }
 
-class LangCLike extends LangHandler{
-    generatedFunctionStart = "```javascript";
-    generatedFunctionEnd = "```";
+class LangJs extends LangHandler{
+    generatedFunctionStart = ["```javascript", "```"];
+    generatedFunctionEnd = ["```"];
 
-    lineComments = ["//"];
+    singleLineComments = ["//"];
     multiLineComments = [
         {start: "/*", end: "*/"}
     ];
 }
 
-class LangJs extends LangCLike{}
+class LangCLike extends LangHandler{
+    generatedFunctionStart = ["```c", "```"];
+    generatedFunctionEnd = ["```"];
 
-class LangJava extends LangCLike{}
+    singleLineComments = ["//"];
+    multiLineComments = [
+        {start: "/*", end: "*/"}
+    ];
+}
 
-class LangC extends LangCLike{}
 
-class LangCpp extends LangCLike{}
+class LangJava extends LangCLike{
+    generatedFunctionStart = ["```java", "```"];
+}
 
-class LangCs extends LangCLike{}
+class LangC extends LangCLike{
+    generatedFunctionStart = ["```c", "```"];
+}
+
+class LangCpp extends LangCLike{
+    generatedFunctionStart = ["```cpp", "```"];
+}
+
+class LangCs extends LangCLike{
+    generatedFunctionStart = ["```cs", "```csharp", "```"];
+}
 
 //make annonymous function and call it here to add the required things per language we need dictionary or so
 class Langs{

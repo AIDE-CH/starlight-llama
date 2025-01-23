@@ -77,17 +77,6 @@ class OllamaJsUtil{
     static setModel(mod){
         vscodeOllama.postMessage({ type: "onModel", value: mod });
     }
-
-    static download(){
-        //console.log("on donwload");
-        vscodeOllama.postMessage({ type: "onDownload", value: null });
-    }
-
-    static test(){
-        //console.log("on test");
-        vscodeOllama.postMessage({ type: "onTest", value: null });
-    }
-
     static info(txt){
         vscodeOllama.postMessage({ type: "onInfo", value: txt });
     }

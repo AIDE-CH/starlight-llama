@@ -1,7 +1,7 @@
 
 const vscode = require("vscode");
-const EUtils = require('./editor-utils');
-const Langs = require("./langs/langs");
+const EUtils = require('./EditorUtils');
+const Langs = require("./langs/Langs");
 
 const { default: ollama } = require("ollama");
 const cheerio = require('cheerio');
@@ -15,24 +15,27 @@ const request = require('request');
 var progress = require('request-progress');
 
 class Utils{
-    static sett = {model: "llama3.1:8b", url: "http://localhost:11434"};
+    static sett = {model: "llama3.1:8b", url: "http://localhost:11434", autocomplete: true};
 
     static getSettings(){
         const configuration = vscode.workspace.getConfiguration("starlight-llama"); 
         const model = configuration.get("model");
         const url = configuration.get("url");
+        const autocomplete = configuration.get("autocomplete");
         if(model){
             Utils.sett.model = model;
         }
         if(url){
             Utils.sett.url = url;
         }
+        Utils.sett.autocomplete = autocomplete;
     }
 
     static saveSettings(){
         const configuration = vscode.workspace.getConfiguration("starlight-llama");
         configuration.update("model", Utils.sett.model, true);
         configuration.update("url", Utils.sett.url, true);
+        configuration.update("autocomplete", Utils.sett.autocomplete, true);
     }
 
     static trackPromise(promise) {
@@ -120,6 +123,11 @@ class Utils{
         Utils.saveSettings();
     }
 
+    static toggleAutoComplete(){
+        Utils.sett.autocomplete = !Utils.sett.autocomplete;
+        Utils.saveSettings();
+    }
+
     static async listOllama(){
         let ret = new Array();
         const response = await fetch('https://ollama.com/search');
@@ -189,6 +197,7 @@ class Utils{
         });
 
         let str = response.message.content;
+        console.log(str);
         return langHandler.extractGeneratedFunction(str);
     }
 

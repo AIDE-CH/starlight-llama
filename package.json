@@ -12,14 +12,35 @@
   "activationEvents": [
     "starlight-llama.helloWorld",
     "starlight-llama.generate",
-    "starlight-llama.search"
+    "starlight-llama.search",
+    "onView:starlight-llama-sidebar"
   ],
   "main": "./extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "starlight-llama-sidebar-view",
+          "title": "starlight-llama",
+          "icon": "media/starlight-llama.svg"
+        }
+      ]
+    },
+    "views": {
+      "starlight-llama-sidebar-view": [
+        {
+          "type": "webview",
+          "id": "starlight-llama-sidebar",
+          "name": "starlight-llama",
+          "icon": "media/starlight-llama.svg",
+          "contextualTitle": "starlight-llama"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "starlight-llama.helloWorld",
-        "title": "Hello World"
+        "command": "starlight-llama.toggle-autocomplete",
+        "title": "Toggle Auto-complete"
       },
       {
         "command": "starlight-llama.generate",
@@ -42,6 +63,11 @@
           "type": "string",
           "default": "http://localhost:11434",
           "description": "ollama url"
+        },
+        "starlight-llama.autocomplete": {
+          "type": "boolean",
+          "default": true,
+          "description": "run or stop autocomplete"
         }
       }
     },
