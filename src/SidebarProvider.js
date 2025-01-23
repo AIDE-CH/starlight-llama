@@ -10,7 +10,7 @@
 // import { ViewCodeCardPanel } from "./ViewCodeCardPanel";
 
 
-// const OllamaPanel = require("./src/OllamaPanel");
+const SearchPanel = require("./SearchPanel");
 // const EUtils = require("./src/editor-utils");
 const GUtils = require("./GUtils");
 const path = require('path');
@@ -83,14 +83,14 @@ class SidebarProvider{
               await OllamaUtils.testOllama();
               break;
             }
-            case "onSearch": {                  
-                if (!data.value) {
-                    return;
-                }
-                OllamaUtils.setModel(data.value);
-                break;
+            case "onSearch": {
+              vscode.window.showInformationMessage("on search");
+              SearchPanel.createOrShow(this._extensionUri);
+              
+              break;
             }
             case "onAutoComplete":{
+              vscode.window.showInformationMessage("on autocomplete");
               OllamaUtils.toggleAutoComplete();
               break;
             }
@@ -117,7 +117,7 @@ class SidebarProvider{
     const nonce = getNonce();
     const itemsOllama = []; //await OllamaUtils.listOllama();
     const jsonArray = JSON.stringify(itemsOllama);
-    const autoComplete = false;
+    const autoComplete = OllamaUtils.sett.autocomplete;
 
     let html = await GUtils.readHtmlFile(
         path.join(this._extensionUri.fsPath, "media", "sidebar-view.html")

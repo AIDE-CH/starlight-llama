@@ -67,7 +67,7 @@
         "starlight-llama.autocomplete": {
           "type": "boolean",
           "default": true,
-          "description": "run or stop autocomplete"
+          "description": "run autocomplete"
         }
       }
     },

@@ -1,8 +1,8 @@
 
 class LangHandler{
 
-    generatedFunctionStart = "";
-    generatedFunctionEnd = "";
+    generatedFunctionStart = ["```"];
+    generatedFunctionEnd = ["```"];
 
     singleLineComments = [];
     multiLineComments = [];
@@ -157,6 +157,7 @@ class Langs{
         javascript: new LangJs(),
         python: new LangPy()
     }
+    static default = new LangHandler();
 
     static l(langStr){
         try{
@@ -166,7 +167,7 @@ class Langs{
         }catch(e){
             console.log(e);
         }
-        return null;
+        return Langs.default;
     }
     
 }

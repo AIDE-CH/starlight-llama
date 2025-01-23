@@ -1,6 +1,7 @@
 
 const vscode = require("vscode");
 const EUtils = require('./EditorUtils');
+const PromptUtils = require('./PromptUtils');
 const Langs = require("./langs/Langs");
 
 const { default: ollama } = require("ollama");
@@ -15,7 +16,10 @@ const request = require('request');
 var progress = require('request-progress');
 
 class Utils{
-    static sett = {model: "llama3.1:8b", url: "http://localhost:11434", autocomplete: true};
+    static sett = {model: "llama3.1:8b", url: "http://localhost:11434", 
+        autocomplete: true, cacheSize: 100};
+
+    static cache = PromptUtils.createCache(Utils.sett.cacheSize);
 
     static getSettings(){
         const configuration = vscode.workspace.getConfiguration("starlight-llama"); 
@@ -160,33 +164,53 @@ class Utils{
         return ret;
     }
     
-
-    static async callOllama(description) {
+    static async autoCompleteWithOllama(beforeText, afterText) {
         try{
             const language = EUtils.getLanguage();
             const langHandler = Langs.l(language);
             if(!langHandler) throw new Error(`No language handler for the language(${language})`);
-            let ud = langHandler.removeComments(description); // updated description
+            //let ud = langHandler.removeComments(description); // updated description
+            if(!beforeText) return null;
             
-            if(!ud) return null;
-            let gf = await Utils._callOllama(ud, language, langHandler); // generated function
-            // EUtils.addLineToEditor(" some text ");
-            if(!gf) return;
-            EUtils.addLineAfterCurrentLine(gf);
+            const cache = Utils.cache.has(beforeText);
+            let gen = null; //generated
+            if(cache){
+                gen = cache.result;
+            }else{
+                //let gf =  await Utils._ollamaCompleteUsingGenerateApi(beforeText, afterText, language, langHandler); // generated function
+                gen = await Utils._ollamaCompleteUsingChatApi(beforeText, afterText, language, langHandler); // gen
+                if(!gen) return null;
+                gen = PromptUtils.handleSimilarToBefore(beforeText, gen);
+                if(!gen) return null;
+                Utils.cache.add(beforeText, gen);
+            }
+
+            if(!gen) return null;
+            return gen;
         }catch(e){
             vscode.window.showErrorMessage("Error: " + e);
         }
+        return null;
     }
 
-    static async _callOllama(description, lang, langHandler) {
+    static _removeFromStart(str, before){
+        if(str.startsWith(before)) return str.sub
+    }
+
+    static async _ollamaCompleteUsingChatApi(beforeText, afterText, lang, langHandler) {
         Utils.getSettings();
 
-        const content = ` you are a ${lang} coding assistant. Please write a ${lang} function which does the following:
-                    ${description}.
-                    Provide standaared function documentation. 
-                    Use standard ${lang} naming conventions.
-                    Provide only the function.
-                    Donot provide analysis or usage examples.`;
+        const content = `you are a ${lang} coding completion assistant. 
+        I will provide a ${lang} code surrounded by ##########".
+        This is the ${lang} code:
+        ##########
+        ${beforeText}
+        ##########
+        Please Complete the given ${lang} code.
+        Do not provide any explaination. 
+        Use standard ${lang} naming conventions if needed.
+        Provide only the code.
+        Donot provide analysis or usage examples.`;
         ollama.config.host = Utils.sett.url;
         const response = await ollama.chat({
             model: Utils.sett.model, 
@@ -197,27 +221,93 @@ class Utils{
         });
 
         let str = response.message.content;
-        console.log(str);
+        //console.log(str);
+        return langHandler.extractGeneratedFunction(str);
+    }
+
+
+    static async _ollamaCompleteUsingGenerateApi(beforeText, afterText, lang, langHandler) {
+        Utils.getSettings();
+
+        // const content = ` you are a ${lang} coding assistant. Please complete the following ${lang} function which does the following:
+        //             ${description}.
+        //             Provide standard function documentation. 
+        //             Use standard ${lang} naming conventions.
+        //             Provide only the function.
+        //             Donot provide analysis or usage examples.`;
+        ollama.config.host = Utils.sett.url;
+        const response = await ollama.generate({
+            model: Utils.sett.model, 
+            prompt: beforeText,
+            // suffix: afterText, // not supported as it seams for now
+        });
+
+        let str = response.response;
+        //console.log(str);
+        return langHandler.extractGeneratedFunction(str);
+    }
+
+    static async generateFunctionWithOllama(description) {
+        try{
+            const language = EUtils.getLanguage();
+            const langHandler = Langs.l(language);
+            if(!langHandler) throw new Error(`No language handler for the language(${language})`);
+            let ud = langHandler.removeComments(description); // updated description
+            
+            if(!ud) return null;
+            
+            let gf = await Utils._ollamaChatToGenerateFunction(ud, language, langHandler); // generated function
+            if(!gf) return;
+            EUtils.addLineAfterCurrentLine(gf);
+        }catch(e){
+            vscode.window.showErrorMessage("Error: " + e);
+        }
+    }
+
+    static async _ollamaChatToGenerateFunction(description, lang, langHandler) {
+        Utils.getSettings();
+        const content = ` you are a ${lang} coding assistant. Please write a ${lang} function which does the following:
+                    ${description}.
+                    Provide standard function documentation. 
+                    Use standard ${lang} naming conventions.
+                    Provide only the function.
+                    Donot provide analysis or usage examples.`;
+        ollama.config.host = Utils.sett.url;
+        
+        const response = await ollama.chat({
+            model: Utils.sett.model, 
+            messages: [
+                {   role: 'user', 
+                    content: content }
+            ]
+        });
+        let str = response.message.content;
+        
+        //console.log(str);
         return langHandler.extractGeneratedFunction(str);
     }
 
 
     static async testOllama(){
-        Utils.getSettings();
-        const response = await fetch(Utils.sett.url);
-        let ok = true;
-        let html = "no response from Ollama";
-        if(!response) ok = false;
-        if(ok){
-            html = await response.text();
-            if(!html){
-                ok = false;
+        try{
+            Utils.getSettings();
+            const response = await fetch(Utils.sett.url);
+            let ok = true;
+            let html = "no response from Ollama";
+            if(!response) ok = false;
+            if(ok){
+                html = await response.text();
+                if(!html){
+                    ok = false;
+                }
             }
-        }
-        if(ok){
-            vscode.window.showInformationMessage(html);
-        }else{
-            vscode.window.showErrorMessage(html);
+            if(ok){
+                vscode.window.showInformationMessage(html);
+            }else{
+                vscode.window.showErrorMessage(html);
+            }
+        }catch(e){
+            vscode.window.showErrorMessage("Calling ollama returned an error: " + e);
         }
     }
 
